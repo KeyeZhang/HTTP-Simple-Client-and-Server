@@ -9,6 +9,7 @@ given filename it can read the file and write it to buffer and compose a respons
 
 
 9-31:
+
 server - multi-process enabled, cycling send and recv 
 
 server - debugged
@@ -23,9 +24,10 @@ client - cycling send and recv(not debugged )
 
 TO-DO: 
 
+
 1. debug client.c
 
-2.modify the input standard of server and client to matah the requirements of autograder.  
+2. modify the input standard of server and client to matah the requirements of autograder.  
 
 3. makefile 
 
