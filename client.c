@@ -14,15 +14,15 @@
 
 #include <arpa/inet.h>
 
-#define PORT "3490" // the port client will be connecting to 
+#define PORT "3490" // the port client will be connecting to
 
-#define MAXDATASIZE 100 // max number of bytes we can get at once 
+#define MAXDATASIZE 100 // max number of bytes we can get at once
 
-
-#define HEAD "GET /%s HTTP/1.1\n\
-User-Agent: Wget/1.12(linux-gnu)\n\
-Host: %s:%s\n\
-Connection: Keep-Alive\n\n"
+//Note that the newlines are technically supposed to be CRLF – so, “\r\n” on a Unix machine.
+#define HEAD "GET /%s HTTP/1.1\r\n\
+User-Agent: Wget/1.12(linux-gnu)\r\n\
+Host: %s:%s\r\n\
+Connection: Keep-Alive\r\n\r\n" //HTTP specifies that the end of a request should be marked by a blank line — so be sure to have two newlines at the end
 
 
 // get sockaddr, IPv4 or IPv6:
@@ -49,14 +49,14 @@ void get_input(char * input, char * filename, char * ipaddr, char * port){
 	while(*p_end != '\x00'){
 		if(*p_end == ':'){
 			port_flag = 1;
-			
+
 			strncpy(ipaddr, p_start, p_end - p_start);
 			p_end ++;
 			p_start = p_end;
 			continue;
 		}
 		if(flag == 0  && *p_end == '/'){
-			
+
 			if(port_flag == 1){
 				strncpy(port, p_start, p_end - p_start);
 			}
@@ -66,7 +66,7 @@ void get_input(char * input, char * filename, char * ipaddr, char * port){
 			p_end ++;
 			p_start = p_end;
 			flag = 1;
-			
+
 		}
 		p_end++;
 	}
@@ -76,7 +76,7 @@ void get_input(char * input, char * filename, char * ipaddr, char * port){
 
 int main(int argc, char *argv[])
 {
-	int sockfd, numbytes;  
+	int sockfd, numbytes;
 	char buf[MAXDATASIZE];
 	struct addrinfo hints, *servinfo, *p;
 	int rv;
@@ -90,8 +90,8 @@ int main(int argc, char *argv[])
 	memset(&hints, 0, sizeof hints);
 	hints.ai_family = AF_UNSPEC;
 	hints.ai_socktype = SOCK_STREAM;
-	
-	
+
+
 	char filename[128];
 	char port[8];
 	//char * path = NULL;
@@ -99,9 +99,9 @@ int main(int argc, char *argv[])
 	memset(filename, 0, sizeof filename);
 	memset(port, 0, sizeof port);
 	memset(ipaddr, 0, sizeof ipaddr);
-	
+
 	get_input(argv[1], filename, ipaddr, port);
-	
+
 	char * Port = PORT;
 	if(*port != '\x00') {
 		 Port = port;
@@ -140,11 +140,11 @@ int main(int argc, char *argv[])
 	inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
 			s, sizeof s);
 	printf("client: connecting to %s\n", s);
-	
+
 
 // **************************
 	char * content;
-	
+
 	/*
 	FILE * http_req = fopen(filename, "rb");
 	if(http_req == NULL){
@@ -154,8 +154,8 @@ int main(int argc, char *argv[])
 	int file_len = ftell(http_req);
 	rewind(http_req);
 	*/
-	
-	
+
+
 	char send_buff[1024];
 	memset(send_buff, 0, sizeof send_buff);
 	sprintf(send_buff, HEAD, filename, ipaddr, Port);
@@ -195,8 +195,8 @@ int main(int argc, char *argv[])
 		fwrite(buf, n, 1, fp);
 		received += n;
 	}
+	fclose(fp);
 	close(sockfd);
 	printf("finished receiving file, the size is: %d Bytes \n", received);
 	return 0;
 }
-
