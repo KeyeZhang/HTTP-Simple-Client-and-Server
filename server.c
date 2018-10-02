@@ -20,14 +20,17 @@
 
 #define BACKLOG 10	 // how many pending connections queue will hold
 
-#define TAIL "\n\n"
-#define HEAD "HTTP/1.1 200 OK\n\
+//#define TAIL "\n\n"
+/*#define HEAD "HTTP/1.1 200 OK\n\
 Content-Type:text/html,charset=ascii\n\
 Connection:Keep-Alive\n\
 Cache-Control:private,max_age=0\n\
 Transfer-Coding:chunked\n\
 Accepted-Ranges:bytes\n\
-Content-Length:%d\n\n"
+Content-Length:%d\n\n"*/
+
+#define TAIL ""
+#define HEAD "HTTP/1.0 200 OK\r\n\r\n"
 
 char LOGBUFF[1024];
 void sigchld_handler(int s)
@@ -116,15 +119,16 @@ int generate_http_response(const char * command, char ** content){
 	memset(head_buff, 0, sizeof head_buff);
 	sprintf(head_buff, HEAD, file_length);
 	int head_len = strlen(head_buff);
-	int tail_len = sizeof(TAIL);
+	//int tail_len = sizeof(TAIL);
 	
-	int total_len = head_len + tail_len + file_length;
+	int total_len = head_len + file_length;
+	//int total_len = head_len + tail_len + file_length;
 	*content = (char* ) malloc(total_len);
 
 	char * tmp = *content;
 	memcpy(tmp, head_buff, head_len);
 	memcpy(&tmp[head_len], file_buff, file_length);
-	memcpy(&tmp[head_len] + file_length, TAIL, tail_len);
+	//memcpy(&tmp[head_len] + file_length, TAIL, tail_len);
 
 	if (file_buff){
 		free(file_buff);
@@ -213,7 +217,10 @@ int main(void)
 
 	while(1) {  // main accept() loop
 		sin_size = sizeof their_addr;
+		printf("check%d\n",1);
 		new_fd = accept(sockfd, (struct sockaddr *)&their_addr, &sin_size);
+		printf("check%d\n",2);
+		printf("new_fd:%d\n", new_fd);
 		if (new_fd == -1) {
 			perror("accept");
 			continue;
@@ -224,8 +231,9 @@ int main(void)
 		char command[1024];
 		memset(buffer, 0, sizeof buffer);
 		memset(command, 0, sizeof command);
+		printf("check%d\n",3);
 		rv = recv(new_fd, buffer,sizeof buffer, 0);
-		
+		printf("rv:%d",rv);
 		if(rv == 0){
 			memset(LOGBUFF, 0, sizeof LOGBUFF);
 			sprintf(LOGBUFF, "receive no messages along the connection");
@@ -251,12 +259,13 @@ int main(void)
 			int sent = 0;
 			char * tmp = content;
 			while(sent < response_len){
-
+				printf("sent:%d\n",sent);
 				int n = send(new_fd, tmp, response_len - sent, 0);
 				if (n == -1){
 					printf("error occurred and the packets have not been sent completely");
 					break;
 				}
+				sent += n;
 			}
 
 			/*if ( send(new_fd, content, response_len, 0) == -1){
