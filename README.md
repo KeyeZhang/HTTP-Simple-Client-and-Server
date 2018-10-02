@@ -32,13 +32,13 @@ done with Makefile
 
 
 
-#### TO-DO: 
+### TO-DO: 
 
-1. Find reason for not passing the testcase: "failed to get a medium size file from the server"
+Find reason for not passing the testcase: "failed to get a medium size file from the server"
 
 
 
-#### [test]:
+### How to test:
 
 1. put [input] and [server.c] in same folder and compile. -vm1
 
