@@ -29,8 +29,8 @@ Transfer-Coding:chunked\n\
 Accepted-Ranges:bytes\n\
 Content-Length:%d\n\n"*/
 
-#define TAIL ""
-#define HEAD "HTTP/1.0 200 OK\r\n\r\n"
+//#define TAIL ""
+#define HEAD "HTTP/1.1 200 OK\r\n\r\n"
 
 char LOGBUFF[1024];
 void sigchld_handler(int s)
@@ -149,7 +149,7 @@ void *get_in_addr(struct sockaddr *sa)
 	return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int main(void)
+int main(int argc, char* argv[])
 {
 	int sockfd, new_fd;  // listen on sock_fd, new connection on new_fd
 	struct addrinfo hints, *servinfo, *p;
@@ -165,7 +165,7 @@ int main(void)
 	hints.ai_socktype = SOCK_STREAM;
 	hints.ai_flags = AI_PASSIVE; // use my IP
 
-	if ((rv = getaddrinfo(NULL, PORT, &hints, &servinfo)) != 0) {
+	if ((rv = getaddrinfo(NULL, argv[1], &hints, &servinfo)) != 0) {
 		fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
 		return 1;
 	}
