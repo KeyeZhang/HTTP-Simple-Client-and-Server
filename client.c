@@ -140,6 +140,8 @@ int main(int argc, char *argv[])
 	inet_ntop(p->ai_family, get_in_addr((struct sockaddr *)p->ai_addr),
 			s, sizeof s);
 	printf("client: connecting to %s\n", s);
+	//printf("client: connecting to %s\n", s);
+	//printf("test");
 
 
 // **************************
@@ -154,23 +156,31 @@ int main(int argc, char *argv[])
 	int file_len = ftell(http_req);
 	rewind(http_req);
 	*/
-
-
+	//printf("client: connecting to %s\n", s);
+	//printf("ready to set send buff");
 	char send_buff[1024];
 	memset(send_buff, 0, sizeof send_buff);
 	sprintf(send_buff, HEAD, filename, ipaddr, Port);
 	int total_len = strlen(send_buff);
+	//printf("%d\n", total_len);
 	/*fread(content, file_len, 1, http_req);
 	fclose(http_req);
 	*/
 	int sent = 0;
 	while(sent < total_len){
-		int n = send(sockfd, content, total_len - sent, 0);
+		//printf("%d\n", total_len);
+		//sleep(2);
+		printf("sent: %d\n", sent);
+		int n = send(sockfd, send_buff, total_len - sent, 0);
+		printf("n: %d\n", n);
 		if(n == -1){
+			break;
 			printf("failure when sending file");
 		}
 		sent = sent + n;
 	}
+
+//printf("%d\n", total_len);
 
 	freeaddrinfo(servinfo); // all done with this structure
 
@@ -186,15 +196,30 @@ int main(int argc, char *argv[])
 */
 	int received = 0;
 	int n = 1;
+	int headerRemoved = 0;
+	char * headerEndPtr = 0;
 	FILE * fp = fopen(filename, "wb");
-	while(1){
+
+	do{
 		n = recv(sockfd, buf, MAXDATASIZE, 0);
-		if(n == -1){
+		//printf("n:%d\n",n);
+		//if(n == -1){
+		if (n == 0){
 			break;
 		}
-		fwrite(buf, n, 1, fp);
+
+		headerEndPtr = strstr(buf, "\r\n\r\n") + 4;
+		if (!headerRemoved) {
+			fwrite(headerEndPtr, n + buf - headerEndPtr, 1, fp);
+			headerRemoved = 1;
+		} else {
+			fwrite(buf, n, 1, fp);
+		}
+	
 		received += n;
-	}
+		
+	}while(1);
+
 	fclose(fp);
 	close(sockfd);
 	printf("finished receiving file, the size is: %d Bytes \n", received);
