@@ -1,7 +1,7 @@
 # CS438 MP1: HTTP Simple Client and Server
-## Due: Oct.3rd, 2018, 11:59PM CDT
+### Due: Oct.3rd, 2018, 11:59PM CDT
 
-### 438 Time-line:
+## 438 Time-line:
 
 #### 9-29:
 
@@ -32,13 +32,13 @@ done with Makefile
 
 
 
-### TO-DO: 
+## TO-DO: 
 
 Find reason for not passing the testcase: "failed to get a medium size file from the server"
 
 
 
-### How to test:
+## How to test:
 
 1. put [input] and [server.c] in same folder and compile. -vm1
 
