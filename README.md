@@ -3,13 +3,13 @@
 
 ### 438 Time-line:
 
-####9-29:
+#### 9-29:
 
 server - generate_http_request() finished
 
 given filename it can read the file and write it to buffer and compose a response string
 
-####9-31:
+#### 9-31:
 
 server - multi-process enabled, cycling send and recv 
 
@@ -22,7 +22,7 @@ client - input parse debugged
 
 client - cycling send and recv(not debugged )
 
-####10-2
+#### 10-2
 
 debugged client.c's send function
 
@@ -32,13 +32,13 @@ done with Makefile
 
 
 
-####TO-DO: 
+#### TO-DO: 
 
 1. Find reason for not passing the testcase: "failed to get a medium size file from the server"
 
 
 
-####[test]:
+#### [test]:
 
 1. put [input] and [server.c] in same folder and compile. -vm1
 
