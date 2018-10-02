@@ -30,11 +30,11 @@ fixed the HTTP HEADER in server.c
 
 done with Makefile
 
-
+First autograder test gives a 75/100 score
 
 ## TO-DO: 
 
-Find reason for not passing the testcase: "failed to get a medium size file from the server"
+Find reason for not passing the testcase - failed to get a medium size file from the server, -25%
 
 
 
