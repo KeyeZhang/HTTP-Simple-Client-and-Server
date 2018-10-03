@@ -1,14 +1,15 @@
-438 Time-line:
+# CS438 MP1: HTTP Simple Client and Server
+### Due: Oct.3rd, 2018, 11:59PM CDT
 
-9-29:
+## 438 Time-line:
+
+#### 9-29:
 
 server - generate_http_request() finished
 
 given filename it can read the file and write it to buffer and compose a response string
 
-
-
-9-31:
+#### 9-31:
 
 server - multi-process enabled, cycling send and recv 
 
@@ -21,18 +22,23 @@ client - input parse debugged
 
 client - cycling send and recv(not debugged )
 
+#### 10-2
 
-TO-DO: 
+debugged client.c's send function
+
+fixed the HTTP HEADER in server.c
+
+done with Makefile
+
+First autograder test gives a 75/100 score
+
+## TO-DO: 
+
+Find reason for not passing the testcase - failed to get a medium size file from the server, -25%
 
 
-1. debug client.c
 
-2. modify the input standard of server and client to matah the requirements of autograder.  
-
-3. makefile 
-
-
-[test]:
+## How to test:
 
 1. put [input] and [server.c] in same folder and compile. -vm1
 
