@@ -16,7 +16,7 @@
 
 #define PORT "3490" // the port client will be connecting to
 
-#define MAXDATASIZE 100 // max number of bytes we can get at once
+#define MAXDATASIZE 100000 // max number of bytes we can get at once
 
 //Note that the newlines are technically supposed to be CRLF – so, “\r\n” on a Unix machine.
 #define HEAD "GET /%s HTTP/1.1\r\n\
@@ -92,10 +92,12 @@ int main(int argc, char *argv[])
 	hints.ai_socktype = SOCK_STREAM;
 
 
-	char filename[128];
+	//char filename[128];
+	char filename[1024];
 	char port[8];
 	//char * path = NULL;
-	char ipaddr[16];
+	//char ipaddr[16];
+	char ipaddr[1024];
 	memset(filename, 0, sizeof filename);
 	memset(port, 0, sizeof port);
 	memset(ipaddr, 0, sizeof ipaddr);
@@ -145,7 +147,7 @@ int main(int argc, char *argv[])
 
 
 // **************************
-	char * content;
+	//char * content;
 
 	/*
 	FILE * http_req = fopen(filename, "rb");
@@ -197,28 +199,45 @@ int main(int argc, char *argv[])
 	int received = 0;
 	int n = 1;
 	int headerRemoved = 0;
-	char * headerEndPtr = 0;
+	char * headerEndPtr;
 	FILE * fp = fopen(filename, "wb");
 
-	do{
-		n = recv(sockfd, buf, MAXDATASIZE, 0);
-		//printf("n:%d\n",n);
+/*
+	while (1) {
+		n = recv(sockfd, buf, MAXDATASIZE-1, 0);
+		if (n == 0) {
+			break;
+		}
+	}*/
+
+	//headerEndPtr = strstr(buf, "\r\n\r\n") + 4;
+	//fwrite(headerEndPtr, sizeof (char), strlen(buf) - (headerEndPtr - buf), fp);
+
+
+	do {
+		n = recv(sockfd, buf, MAXDATASIZE-1, 0);
+		printf("n:%d\n",n);
 		//if(n == -1){
 		if (n == 0){
 			break;
 		}
 
+		if (n == -1) {
+			perror("recv");
+			exit(1);
+		}
+
 		headerEndPtr = strstr(buf, "\r\n\r\n") + 4;
 		if (!headerRemoved) {
-			fwrite(headerEndPtr, n + buf - headerEndPtr, 1, fp);
+			fwrite(headerEndPtr, sizeof (char), n + buf - headerEndPtr, fp);
 			headerRemoved = 1;
 		} else {
-			fwrite(buf, n, 1, fp);
+			fwrite(buf, sizeof (char), n, fp);
 		}
-	
+
 		received += n;
-		
-	}while(1);
+
+	} while(1);
 
 	fclose(fp);
 	close(sockfd);

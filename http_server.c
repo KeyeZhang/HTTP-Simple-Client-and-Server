@@ -19,6 +19,7 @@
 #define PORT "3490"  // the port users will be connecting to
 
 #define BACKLOG 10	 // how many pending connections queue will hold
+#define MAXDATASIZE 100000
 
 //#define TAIL "\n\n"
 /*#define HEAD "HTTP/1.1 200 OK\n\
@@ -45,21 +46,21 @@ void save_log(char * buff){
 }
 
 
-// delimit the http text and get the filename, HTTP version 
+// delimit the http text and get the filename, HTTP version
 void preprocess_http_request(char * httpmsg, char * command){
 	char * start_req = httpmsg;
 	char * end_req = httpmsg;
-	
+
 	while(*start_req){
 		if (*start_req == '/'){
 			break;
 		}
 		start_req++;
-	}	
-	
+	}
+
 	start_req++;
 	end_req = strchr(httpmsg, '\n');
-	
+
 	while(*end_req != ' '){
 		end_req--;
 	}
@@ -100,16 +101,16 @@ int get_content(const char * filename, char ** content){
 
 // command only should be the string after the method 'GET'
 int generate_http_response(const char * command, char ** content){
-	
+
 	char * file_buff = NULL;
 	char head_buff[1024];
 	int file_length;
-	
-	
+
+
 
 	// file_buf is the addr of the string
-	file_length = get_content(command, &file_buff);	
-	
+	file_length = get_content(command, &file_buff);
+
 //	printf("file_length: %d", file_length);
 
 	if (file_length == -1 || file_length == 0){
@@ -117,10 +118,10 @@ int generate_http_response(const char * command, char ** content){
 	}
 
 	memset(head_buff, 0, sizeof head_buff);
-	sprintf(head_buff, HEAD, file_length);
+	sprintf(head_buff, HEAD);
 	int head_len = strlen(head_buff);
 	//int tail_len = sizeof(TAIL);
-	
+
 	int total_len = head_len + file_length;
 	//int total_len = head_len + tail_len + file_length;
 	*content = (char* ) malloc(total_len);
@@ -239,48 +240,81 @@ int main(int argc, char* argv[])
 			sprintf(LOGBUFF, "receive no messages along the connection");
 		}
 
-		// s == char[ipv6_length]	
+		// s == char[ipv6_length]
 		inet_ntop(their_addr.ss_family,
 			get_in_addr((struct sockaddr *)&their_addr),
 			s, sizeof s);
 		printf("server: got connection from %s\n", s);
-		
-		// multi-process 
+
+		// multi-process
 		if (!fork()) { // this is the child process
 			// there is no need to shutdown the listener, but should create a new thread for the new sockfd
 			//
 			close(sockfd); // child doesn't need the listener
-			
-			
+
+
 			preprocess_http_request(buffer, command);
-			char * content = NULL;
-			int response_len = generate_http_response(command, &content);
-			
+
+			//char * content = NULL;
+			char content[MAXDATASIZE];
+			FILE* fp;
 			int sent = 0;
-			char * tmp = content;
-			while(sent < response_len){
-				printf("sent:%d\n",sent);
-				int n = send(new_fd, tmp, response_len - sent, 0);
-				if (n == -1){
-					printf("error occurred and the packets have not been sent completely");
+			int n;
+			int firstRead = 1;
+
+			//int response_len = generate_http_response(command, content);
+			fp = fopen(command, "rb");
+			memset(content, '\0', sizeof content);
+			sprintf(content, HEAD);
+
+			while(1){
+				if (firstRead) {
+					n = fread(content + strlen(HEAD), sizeof (char), MAXDATASIZE - strlen(HEAD), fp);
+					n = send(new_fd, content, n + strlen(HEAD), 0);
+					if (n == -1){
+						printf("error occurred and the packets have not been sent completely");
+						break;
+					}
+					firstRead = 0;
+				} else {
+					n = fread(content, sizeof (char), MAXDATASIZE, fp);
+					n = send(new_fd, content, n, 0);
+					if (n == -1){
+						printf("error occurred and the packets have not been sent completely");
+						break;
+					}
+				}
+				//printf("sent:%d\n",sent);
+				if (n == 0) {
 					break;
 				}
+
 				sent += n;
 			}
 
+			// while(sent < response_len){
+			// 	printf("sent:%d\n",sent);
+			// 	int n = send(new_fd, tmp, response_len - sent, 0);
+			// 	if (n == -1){
+			// 		printf("error occurred and the packets have not been sent completely");
+			// 		break;
+			// 	}
+			// 	sent += n;
+			// }
+
 			/*if ( send(new_fd, content, response_len, 0) == -1){
-			
+
 				memset(LOGBUFF, 0, sizeof LOGBUFF);
 				sprintf(LOGBUFF, "send error: %s\n", strerror(errno));
 				save_log(LOGBUFF);
 				exit(EXIT_FAILURE);
 			}*/
-			printf("success sending out %d bytes\n", response_len);
-			
+			//printf("success sending out %d bytes\n", response_len);
+
 			close(new_fd);
-			if(content){
-				free(content);
-			}
+			// if(content){
+			// 	free(content);
+			// }
 			exit(0);
 		}
 		close(new_fd);  // parent doesn't need this
@@ -292,13 +326,13 @@ int main(int argc, char* argv[])
 /*int main(void){
 	char * fn = "input";
 	char * content = NULL;
-	int file_length = get_content(fn, &content);	
+	int file_length = get_content(fn, &content);
 	FILE * fp = fopen("output", "wb");
 	fwrite(content, file_length,1, fp);
 	fclose(fp);
 
 	//printf("write finished, and file_length equals %d\n",file_length);
-	
+
 	char command[1024];
 	memset(command, 0, 1024);
 	char http[] = "GET /input HTTP/1.1\n";
@@ -317,4 +351,3 @@ int main(int argc, char* argv[])
 
 	return 0;
 }*/
-
