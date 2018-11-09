@@ -1,7 +1,7 @@
-# CS438 MP1: HTTP Simple Client and Server
-### Due: Oct.3rd, 2018, 11:59PM CDT
+# HTTP Simple Client and Server
 
-## 438 Time-line:
+
+## Time-line:
 
 #### 9-29:
 
